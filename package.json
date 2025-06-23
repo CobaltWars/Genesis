@@ -1,0 +1,51 @@
+{
+  "name": "electron-browser",
+  "version": "1.0.0",
+  "description": "Un navigateur web simple basé sur Electron et Chromium",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron .",
+    "build": "electron-builder",
+    "watch": "electron . --watch"
+  },
+  "keywords": [
+    "electron",
+    "browser",
+    "chromium",
+    "web"
+  ],
+  "author": "Manus",
+  "license": "MIT",
+  "dependencies": {
+    
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.8.1",
+    "electron-builder": "^24.11.1",
+    "electron": "^28.1.0"
+  },
+  "build": {
+    "appId": "com.manus.electron-browser",
+    "productName": "Simple Electron Browser",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "index.html",
+      "renderer.js",
+      "preload.js",
+      "README.md"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  }
+}
