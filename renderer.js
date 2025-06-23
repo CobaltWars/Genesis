@@ -9,7 +9,6 @@ const webviewContainer = document.getElementById('webview-container');
 let tabs = [];
 let currentTabIndex = 0;
 
-// Fonction pour vérifier si une chaîne est une URL valide
 function isValidURL(string) {
   try {
     new URL(string);
@@ -19,7 +18,6 @@ function isValidURL(string) {
   }
 }
 
-// Fonction pour formater l'URL ou créer une recherche Google
 function formatURL(input) {
   if (isValidURL(input)) {
     return input;
@@ -32,17 +30,21 @@ function formatURL(input) {
   return 'https://www.google.com/search?q=' + encodeURIComponent(input);
 }
 
-// Créer un nouvel onglet
 function createTab(url = 'https://www.google.com') {
   const tabId = tabs.length;
   
   // Créer l'élément d'onglet
   const tab = document.createElement('div');
   tab.className = 'tab';
-  tab.textContent = 'Nouvel onglet';
   tab.dataset.tabId = tabId;
   
-  // Ajouter l'icône de fermeture
+  // Ajouter le titre
+  const titleSpan = document.createElement('span');
+  titleSpan.className = 'tab-title';
+  titleSpan.textContent = 'Nouvel onglet';
+  tab.appendChild(titleSpan);
+  
+  // Ajouter le bouton de fermeture
   const closeBtn = document.createElement('span');
   closeBtn.className = 'tab-close';
   closeBtn.innerHTML = '×';
@@ -51,7 +53,7 @@ function createTab(url = 'https://www.google.com') {
   // Ajouter le favicon
   const favicon = document.createElement('img');
   favicon.className = 'tab-favicon';
-  favicon.src = 'https://www.google.com/favicon.ico'; // Favicon par défaut
+  favicon.src = 'https://www.google.com/favicon.ico';
   tab.appendChild(favicon);
   
   // Créer le webview
@@ -59,28 +61,23 @@ function createTab(url = 'https://www.google.com') {
   webview.src = url;
   webview.dataset.tabId = tabId;
   
-  // Gestionnaire pour le favicon
+  // Écouteurs d'événements
   webview.addEventListener('page-favicon-updated', (e) => {
     if (e.favicons && e.favicons.length > 0) {
-      const faviconUrl = e.favicons[0];
-      updateTabFavicon(tabId, faviconUrl);
+      updateTabFavicon(tabId, e.favicons[0]);
     }
   });
   
-  // Gestionnaire pour le titre de la page
   webview.addEventListener('page-title-updated', (e) => {
     updateTabTitle(tabId, e.title);
   });
   
-  // Ajouter des écouteurs d'événements pour le webview
   webview.addEventListener('did-navigate', (e) => {
     updateUrlBar(e.url);
-    updateTabTitle(tabId, e.url);
   });
   
   webview.addEventListener('did-navigate-in-page', (e) => {
     updateUrlBar(e.url);
-    updateTabTitle(tabId, e.url);
   });
   
   webview.addEventListener('did-finish-load', () => {
@@ -89,7 +86,6 @@ function createTab(url = 'https://www.google.com') {
   
   webview.addEventListener('dom-ready', () => {
     updateNavButtons(tabId);
-    updateTabTitle(tabId, webview.src);
   });
   
   // Ajouter à la liste des onglets
@@ -97,6 +93,7 @@ function createTab(url = 'https://www.google.com') {
     id: tabId,
     webview: webview,
     tabElement: tab,
+    titleElement: titleSpan,
     url: url,
     favicon: 'https://www.google.com/favicon.ico'
   });
@@ -111,19 +108,6 @@ function createTab(url = 'https://www.google.com') {
   return tabId;
 }
 
-// Mettre à jour le favicon de l'onglet
-function updateTabFavicon(tabId, faviconUrl) {
-  const tab = tabs.find(t => t.id === tabId);
-  if (!tab) return;
-  
-  tab.favicon = faviconUrl;
-  const favicon = tab.tabElement.querySelector('.tab-favicon');
-  if (favicon) {
-    favicon.src = faviconUrl;
-  }
-}
-
-// Basculer vers un onglet spécifique
 function switchTab(tabId) {
   tabs.forEach((tab, index) => {
     const isActive = tab.id === tabId;
@@ -138,12 +122,10 @@ function switchTab(tabId) {
   });
 }
 
-// Mettre à jour la barre d'URL
 function updateUrlBar(url) {
   urlBar.value = url;
 }
 
-// Mettre à jour les boutons de navigation
 function updateNavButtons(tabId) {
   const tab = tabs.find(t => t.id === tabId);
   if (!tab) return;
@@ -152,19 +134,43 @@ function updateNavButtons(tabId) {
   forwardBtn.disabled = !tab.webview.canGoForward();
 }
 
-// Mettre à jour le titre de l'onglet
 function updateTabTitle(tabId, title) {
   const tab = tabs.find(t => t.id === tabId);
   if (!tab) return;
   
-  // Garder seulement le texte avant le tiret si présent (ex: "Google - Recherche" → "Google")
-  const shortTitle = title.split(' - ')[0];
-  tab.tabElement.textContent = shortTitle || `Onglet ${tabId + 1}`;
+  // Nettoyer le titre
+  let cleanTitle = title;
+  const separatorIndex = title.indexOf(' - ');
+  if (separatorIndex > -1) {
+    cleanTitle = title.substring(0, separatorIndex);
+  }
+  
+  // Si c'est une URL, prendre le domaine
+  if (isValidURL(cleanTitle)) {
+    try {
+      const urlObj = new URL(cleanTitle);
+      cleanTitle = urlObj.hostname.replace('www.', '');
+    } catch (e) {
+      // Garder le titre original si l'URL est invalide
+    }
+  }
+  
+  tab.titleElement.textContent = cleanTitle || `Onglet ${tabId + 1}`;
 }
 
-// Fermer un onglet
+function updateTabFavicon(tabId, faviconUrl) {
+  const tab = tabs.find(t => t.id === tabId);
+  if (!tab) return;
+  
+  tab.favicon = faviconUrl;
+  const favicon = tab.tabElement.querySelector('.tab-favicon');
+  if (favicon) {
+    favicon.src = faviconUrl;
+  }
+}
+
 function closeTab(tabId, event) {
-  event.stopPropagation(); // Empêcher le basculement vers l'onglet
+  event.stopPropagation();
   
   const tabIndex = tabs.findIndex(t => t.id === tabId);
   if (tabIndex === -1) return;
@@ -176,25 +182,20 @@ function closeTab(tabId, event) {
   // Supprimer de la liste
   tabs.splice(tabIndex, 1);
   
-  // Si on ferme l'onglet actif, basculer vers un autre onglet
+  // Gérer l'onglet actif
   if (currentTabIndex === tabIndex) {
     const newIndex = Math.min(currentTabIndex, tabs.length - 1);
     if (tabs.length > 0) {
       switchTab(tabs[newIndex].id);
     } else {
-      // Si plus d'onglets, en créer un nouveau
-      createTab();
+      window.electronAPI.closeWindow();
     }
   } else if (currentTabIndex > tabIndex) {
-    // Ajuster l'index courant si nécessaire
     currentTabIndex--;
   }
-  
-  // Réattribuer les IDs si nécessaire (optionnel)
-  // tabs.forEach((tab, index) => { tab.id = index; });
 }
 
-// Gestionnaire pour la barre d'URL
+// Écouteurs d'événements
 urlBar.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') {
     const currentTab = tabs[currentTabIndex];
@@ -205,7 +206,6 @@ urlBar.addEventListener('keypress', (e) => {
   }
 });
 
-// Gestionnaires pour les boutons de navigation
 backBtn.addEventListener('click', () => {
   const currentTab = tabs[currentTabIndex];
   if (currentTab && currentTab.webview.canGoBack()) {
@@ -227,37 +227,42 @@ reloadBtn.addEventListener('click', () => {
   }
 });
 
-// Gestionnaire pour le bouton d'ajout d'onglet
 addTabBtn.addEventListener('click', () => {
   createTab();
 });
 
-// Gestionnaire pour cliquer sur un onglet
+// Modifiez le gestionnaire d'événements pour les onglets
 tabsContainer.addEventListener('click', (e) => {
-  if (e.target.classList.contains('tab')) {
-    const tabId = parseInt(e.target.dataset.tabId);
-    switchTab(tabId);
-  }
-});
-
-// Gestionnaire pour le bouton de fermeture d'onglet
-tabsContainer.addEventListener('click', (e) => {
+  // Gestion du bouton de fermeture
   if (e.target.classList.contains('tab-close')) {
     const tabId = parseInt(e.target.parentElement.dataset.tabId);
     closeTab(tabId, e);
-  } else if (e.target.classList.contains('tab')) {
-    const tabId = parseInt(e.target.dataset.tabId);
+    return;
+  }
+  
+  // Gestion du clic sur l'onglet (y compris ses enfants)
+  let tabElement = e.target;
+  while (tabElement && !tabElement.classList.contains('tab')) {
+    tabElement = tabElement.parentElement;
+    if (!tabElement) return;
+  }
+  
+  if (tabElement.classList.contains('tab')) {
+    const tabId = parseInt(tabElement.dataset.tabId);
     switchTab(tabId);
   }
 });
 
-// Raccourci clavier Ctrl+T
 document.addEventListener('keydown', (e) => {
   if (e.ctrlKey && e.key.toLowerCase() === 't') {
     e.preventDefault();
     createTab();
   }
+  if (e.ctrlKey && e.key.toLowerCase() === 'w' && tabs.length > 0) {
+    e.preventDefault();
+    closeTab(tabs[currentTabIndex].id, { stopPropagation: () => {} });
+  }
 });
 
-// Créer le premier onglet au chargement
+// Créer le premier onglet au démarrage
 createTab();

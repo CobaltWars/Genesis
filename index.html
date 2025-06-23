@@ -20,7 +20,7 @@
         overflow-x: auto;
       }
       .tab {
-        padding: 8px 15px 8px 30px;
+        padding: 8px 25px 8px 30px;
         margin-right: 5px;
         background-color: #f0f0f0;
         border: 1px solid #ccc;
@@ -32,23 +32,13 @@
         max-width: 200px;
         overflow: hidden;
         text-overflow: ellipsis;
+        font-size: 14px;
       }
       .tab.active {
         background-color: #fff;
         border-bottom: 1px solid #fff;
       }
       .tab:hover {
-        background-color: #e8e8e8;
-      }
-      #add-tab-btn {
-        padding: 8px 12px;
-        background-color: #f0f0f0;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        cursor: pointer;
-        margin-left: 5px;
-      }
-      #add-tab-btn:hover {
         background-color: #e8e8e8;
       }
       .tab-close {
@@ -66,12 +56,15 @@
         justify-content: center;
         font-size: 10px;
         cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.2s;
       }
-      
+      .tab:hover .tab-close {
+        opacity: 1;
+      }
       .tab-close:hover {
         background-color: #ff6b6b;
       }
-      
       .tab-favicon {
         position: absolute;
         left: 8px;
@@ -79,6 +72,17 @@
         transform: translateY(-50%);
         width: 16px;
         height: 16px;
+      }
+      #add-tab-btn {
+        padding: 8px 12px;
+        background-color: #f0f0f0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-left: 5px;
+      }
+      #add-tab-btn:hover {
+        background-color: #e8e8e8;
       }
       #toolbar {
         display: flex;
@@ -126,7 +130,6 @@
   </head>
   <body>
     <div id="tabs-container">
-      <!-- Les onglets seront ajoutés dynamiquement ici -->
       <button id="add-tab-btn">+</button>
     </div>
     <div id="toolbar">
@@ -136,7 +139,6 @@
       <input type="text" id="url-bar" placeholder="Enter URL or search term">
     </div>
     <div id="webview-container">
-      <!-- Les webviews seront ajoutées dynamiquement ici -->
     </div>
     <script src="./renderer.js"></script>
   </body>
