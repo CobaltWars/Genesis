@@ -18,6 +18,7 @@
         background-color: #e0e0e0;
         border-bottom: 1px solid #ccc;
         overflow-x: auto;
+        -webkit-app-region: drag; /* Permet de déplacer la fenêtre */
       }
       .tab {
         padding: 8px 25px 8px 30px;
@@ -31,6 +32,7 @@
         overflow: hidden;
         text-overflow: ellipsis;
         font-size: 14px;
+        -webkit-app-region: no-drag; /* Empêche le drag sur les onglets */
       }
       .tab.active {
         background-color: #fff;
@@ -75,9 +77,39 @@
         border-radius: 50px;
         cursor: pointer;
         margin-left: 5px;
+        -webkit-app-region: no-drag;
       }
       #add-tab-btn:hover {
         background-color: #e8e8e8;
+      }
+      #window-controls {
+        display: flex;
+        margin-left: auto;
+        -webkit-app-region: no-drag;
+      }
+      .window-control {
+        width: 46px;
+        height: 32px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+      }
+      .window-control.restore {
+        font-size: 0.8em;
+      }
+      .window-control:hover {
+        background-color: rgba(0,0,0,0.1);
+      }
+      #minimize-btn:hover {
+        background-color: rgba(0,0,0,0.1);
+      }
+      #maximize-btn:hover {
+        background-color: rgba(0,0,0,0.1);
+      }
+      #close-btn:hover {
+        background-color: #e81123;
+        color: white;
       }
       #toolbar {
         display: flex;
@@ -126,6 +158,11 @@
   <body>
     <div id="tabs-container">
       <button id="add-tab-btn">+</button>
+      <div id="window-controls">
+        <div class="window-control" id="minimize-btn">−</div>
+        <div class="window-control" id="maximize-btn">□</div>
+        <div class="window-control" id="close-btn">×</div>
+      </div>
     </div>
     <div id="toolbar">
       <button id="back-btn">&#x2190;</button>

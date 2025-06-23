@@ -264,5 +264,31 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+// Window controls
+const maximizeBtn = document.getElementById('maximize-btn');
+
+document.getElementById('minimize-btn').addEventListener('click', () => {
+  window.electronAPI.minimizeWindow();
+});
+
+maximizeBtn.addEventListener('click', () => {
+  window.electronAPI.maximizeWindow();
+});
+
+document.getElementById('close-btn').addEventListener('click', () => {
+  window.electronAPI.closeWindow();
+});
+
+// Gérer le changement d'état de la fenêtre
+window.electronAPI.onWindowStateChanged((event, state) => {
+  if (state === 'maximized') {
+    maximizeBtn.textContent = '🗗'; // Icône de restauration
+    maximizeBtn.classList.add('restore');
+  } else {
+    maximizeBtn.textContent = '□'; // Icône de maximisation
+    maximizeBtn.classList.remove('restore');
+  }
+});
+
 // Créer le premier onglet au démarrage
 createTab();
